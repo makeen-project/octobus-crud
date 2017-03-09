@@ -1,11 +1,13 @@
+import Joi from 'joi';
 import handler from '../handlers/deleteOneById';
+import identity from 'lodash/identity';
 
 export default ({
   repositoryName,
   basePath,
   config = {},
-  idValidator,
-  idToQuery,
+  idValidator = Joi.any().required(),
+  idToQuery = identity,
 }) => ({
   path: `${basePath}/{id}`,
   method: 'DELETE',

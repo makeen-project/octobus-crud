@@ -1,11 +1,13 @@
+import Joi from 'joi';
+import identity from 'lodash/identity';
 import handler from '../handlers/findById';
 
 export default ({
   repositoryName,
   basePath,
   config = {},
-  idValidator,
-  idToQuery,
+  idValidator = Joi.any().required(),
+  idToQuery = identity,
 }) => ({
   path: `${basePath}/{id}`,
   method: 'GET',

@@ -1,6 +1,6 @@
 import Joi from 'joi';
-import handler from '../handlers/count';
 import identity from 'lodash/identity';
+import handler from '../handlers/count';
 
 export default ({
   repositoryName,

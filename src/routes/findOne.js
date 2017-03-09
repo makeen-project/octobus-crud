@@ -1,11 +1,12 @@
 import Joi from 'joi';
+import identity from 'lodash/identity';
 import handler from '../handlers/findOne';
 
 export default ({
   repositoryName,
   basePath,
   config = {},
-  parseQuery,
+  parseQuery = identity,
 }) => ({
   path: `${basePath}/findOne`,
   method: 'GET',

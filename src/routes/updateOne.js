@@ -1,13 +1,14 @@
 import Joi from 'joi';
+import identity from 'lodash/identity';
 import handler from '../handlers/updateOne';
 
 export default ({
   repositoryName,
   basePath,
   config = {},
-  idValidator,
-  idToQuery,
-  parsePayload,
+  idValidator = Joi.any().required(),
+  idToQuery = identity,
+  parsePayload = identity,
 }) => ({
   path: `${basePath}/{id}`,
   method: 'PATCH',

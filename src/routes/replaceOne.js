@@ -1,3 +1,5 @@
+import Joi from 'joi';
+import identity from 'lodash/identity';
 import handler from '../handlers/replaceOne';
 
 export default ({
@@ -5,9 +7,9 @@ export default ({
   basePath,
   schema,
   config = {},
-  idToQuery,
-  parsePayload,
-  idValidator,
+  idToQuery = identity,
+  parsePayload = identity,
+  idValidator = Joi.any().required(),
 }) => ({
   path: `${basePath}/{id}`,
   method: 'PUT',
