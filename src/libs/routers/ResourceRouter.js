@@ -12,13 +12,12 @@ class ResourceRouter extends Router {
       Joi.attemp(config, {
         basePath: Joi.string().required(),
         repositoryName: Joi.string().required(),
-        baseRouteConfig: Joi.object().default({}),
         entitySchema: Joi.object(),
         idValidator: Joi.object().type(Joi),
       })
     );
 
-    const { repositoryName } = this.config;
+    const { repositoryName, idValidator } = this.config;
 
     this.
       addRoute('count', {
@@ -77,7 +76,7 @@ class ResourceRouter extends Router {
         config: {
           validate: {
             params: {
-              id: this.config.idValidator,
+              id: idValidator,
             },
           },
           description: `Delete an entity of type ${repositoryName} by id`,
@@ -94,7 +93,7 @@ class ResourceRouter extends Router {
         config: {
           validate: {
             params: {
-              id: this.config.idValidator,
+              id: idValidator,
             },
           },
           description: `Find an entity of type ${repositoryName} by id`,
@@ -165,7 +164,7 @@ class ResourceRouter extends Router {
         config: {
           validate: {
             params: {
-              id: this.config.idValidator,
+              id: idValidator,
             },
             payload: this.config.entitySchema,
           },
@@ -186,7 +185,7 @@ class ResourceRouter extends Router {
         config: {
           validate: {
             params: {
-              id: this.config.idValidator,
+              id: idValidator,
             },
             payload: Joi.object().required(),
           },
@@ -202,10 +201,9 @@ class ResourceRouter extends Router {
       });
   }
 
-  addRoute = (id, routeConfig) => (
-    super.addRoute(this.buildId(id), {
-      ...this.config.baseRouteConfig,
-      ...routeConfig,
+  addRoute = (id, routeConfig = {}) => (
+    super.addRoute(id, {
+      id: this.buildId(id),
       tags: ['api'],
       path: this.buildPath(routeConfig.path),
       pre: [
@@ -215,6 +213,7 @@ class ResourceRouter extends Router {
         },
         ...(routeConfig.pre || []),
       ],
+      ...routeConfig,
     })
   )
 
@@ -239,134 +238,93 @@ class ResourceRouter extends Router {
   parseQuery = identity
   parsePayload = identity
 
-  async handleCount(request, reply) {
+  handleCount(request) {
     const { query, Repository } = request.pre;
-
-    try {
-      reply(await Repository.count({ query }));
-    } catch (err) {
-      reply(Boom.wrap(err));
-    }
+    return Repository.count({ query });
   }
 
-  async handleCreateOne(request, reply) {
+  handleCreateOne(request) {
     const { payload, Repository } = request.pre;
-
-    try {
-      reply(await Repository.createOne(payload));
-    } catch (err) {
-      reply(Boom.wrap(err));
-    }
+    return Repository.createOne(payload);
   }
 
-  async handleDeleteOne(request, reply) {
+  handleDeleteOne(request) {
     const { query, Repository } = request.pre;
-
-    try {
-      reply(await Repository.deleteOne({ query }));
-    } catch (err) {
-      reply(Boom.wrap(err));
-    }
+    return Repository.deleteOne({ query });
   }
 
-  async handleFindById(request, reply) {
+  async handleFindById(request) {
     const { query, Repository } = request.pre;
     const id = this.parseId(request.params.id);
 
-    try {
-      const entity = await Repository.findOne({ query });
+    const entity = await Repository.findOne({ query });
 
-      if (!entity) {
-        return reply(Boom.notFound(`Unable to find entity with id ${id}`));
-      }
-
-      return reply(entity);
-    } catch (err) {
-      return reply(Boom.wrap(err));
+    if (!entity) {
+      throw Boom.notFound(`Unable to find entity with id ${id}`);
     }
+
+    return entity;
   }
 
-  async handleFindMany(request, reply) {
+  handleFindMany(request) {
     const { queryParams, Repository } = request.pre;
-
-    try {
-      reply(
-        await Repository.findMany(queryParams).then((c) => c.toArray()),
-      );
-    } catch (err) {
-      reply(Boom.wrap(err));
-    }
+    return Repository.findMany(queryParams).then((c) => c.toArray());
   }
 
-  async handleFindOne(request, reply) {
+  async handleFindOne(request) {
     const { query, Repository } = request.pre;
+    const entity = await Repository.findOne({ query });
 
-    try {
-      const entity = await Repository.findOne({ query });
-
-      if (!entity) {
-        return reply(Boom.notFound('Unable to find entity.'));
-      }
-
-      return reply(entity);
-    } catch (err) {
-      return Boom.wrap(err);
+    if (!entity) {
+      throw Boom.notFound('Unable to find entity.');
     }
+
+    return entity;
   }
 
-  async handleReplaceOne(request, reply) {
+  async handleReplaceOne(request) {
     const { query, payload, Repository } = request.pre;
     const id = this.parseId(request.params.id);
+    const entity = await Repository.findOne({ query });
 
-    try {
-      const entity = await Repository.findOne({ query });
-
-      if (!entity) {
-        return reply(Boom.notFound(`Unable to find entity with id ${id}`));
-      }
-
-      const result = await Repository.replaceOne({
-        ...entity,
-        ...payload,
-      });
-
-      return reply(result);
-    } catch (err) {
-      return reply(Boom.wrap(err));
+    if (!entity) {
+      throw Boom.notFound(`Unable to find entity with id ${id}`);
     }
+
+    return Repository.replaceOne({
+      ...entity,
+      ...payload,
+    });
   }
 
-  async handleUpdateOne(request, reply) {
+  async handleUpdateOne(request) {
     const { query, payload, Repository } = request.pre;
     const id = this.parseId(request.params.id);
+    const entity = await Repository.findOne({ query });
+
+    if (!entity) {
+      throw Boom.notFound(`Unable to find entity with id ${id}`);
+    }
 
     try {
-      const entity = await Repository.findOne({ query });
-
-      if (!entity) {
-        return reply(Boom.notFound(`Unable to find entity with id ${id}`));
-      }
-
       await Repository.validate({
         ...entity,
         ...payload,
       });
-
-      const result = await Repository.updateOne({
-        query: this.idToQuery(request.params.id),
-        update: {
-          $set: payload,
-        },
-      });
-
-      return reply(result);
     } catch (err) {
       if (err.isJoi) {
-        return reply(Boom.badRequest(err.details[0].message));
+        throw Boom.badRequest(err.details[0].message);
       }
 
-      return reply(Boom.wrap(err));
+      throw err;
     }
+
+    return Repository.updateOne({
+      query,
+      update: {
+        $set: payload,
+      },
+    });
   }
 }
 
