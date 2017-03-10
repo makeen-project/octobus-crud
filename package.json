@@ -1,7 +1,7 @@
 {
-  "name": "makeen-crud",
+  "name": "octobus-crud",
   "version": "0.1.0",
-  "description": "makeen CRUD generator",
+  "description": "Octobus CRUD generator",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
@@ -15,10 +15,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/makeen-project/makeen-crud.git"
+    "url": "https://github.com/makeen-project/octobus-crud.git"
   },
   "keywords": [
-    "makeen",
     "octobus",
     "CRUD"
   ],
@@ -29,9 +28,9 @@
   "author": "Victor Zamfir <victor@makeen.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/makeen-project/makeen-crud/issues"
+    "url": "https://github.com/makeen-project/octobus-crud/issues"
   },
-  "homepage": "https://github.com/makeen-project/makeen-crud#readme",
+  "homepage": "https://github.com/makeen-project/octobus-crud#readme",
   "dependencies": {
     "babel-runtime": "^6.6.1",
     "joi": "^8.0.5",
