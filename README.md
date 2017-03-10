@@ -1,10 +1,9 @@
-# Makeen-CRUD
+# Octobus-CRUD
 
-Makeen CRUD generator.
-Helps with generating crud services for octobus and hapi CRUD routes.
+Octobus CRUD generator.
 
 ## Install
 
 ```
-npm install makeen-crud
+npm install octobus-crud
 ```
