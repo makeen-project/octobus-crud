@@ -73,7 +73,7 @@ class CRUDServiceContainer extends ServiceContainer {
     ]
   })
   createMany(data) {
-    return Promise.all(data.map(this.save));
+    return Promise.all(data.map(this.save.bind(this)));
   }
 
   @service({
@@ -113,7 +113,9 @@ class CRUDServiceContainer extends ServiceContainer {
     return this.save(data);
   }
 
-  save = (data) => this.store.save(this.validate(data))
+  save(data) {
+    return this.store.save(this.validate(data));
+  }
 
   @service({
     decorators: [
