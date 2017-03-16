@@ -113,7 +113,7 @@ class CRUDServiceContainer extends ServiceContainer {
     return this.save(data);
   }
 
-  save(data) {
+  async save(data) {
     return this.store.save(this.validate(data));
   }
 
