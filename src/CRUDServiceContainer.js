@@ -52,13 +52,10 @@ class CRUDServiceContainer extends ServiceContainer {
     return this.save(data);
   }
 
-  @service({
-    decorators: [
-      withSchema(
-        Joi.array().min(1).required(),
-      ),
-    ]
-  })
+  @service()
+  @withSchema(
+    Joi.array().min(1).required(),
+  )
   createMany(data) {
     return Promise.all(data.map(this.save.bind(this)));
   }
