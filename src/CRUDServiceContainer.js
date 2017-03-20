@@ -1,8 +1,7 @@
 import Joi from 'joi';
-import { annotations, decorators, ServiceContainer } from 'octobus.js';
+import { decorators, ServiceContainer } from 'octobus.js';
 
-const { service } = annotations;
-const { withSchema } = decorators;
+const { withSchema, service } = decorators;
 
 class CRUDServiceContainer extends ServiceContainer {
   constructor(store, schema) {
