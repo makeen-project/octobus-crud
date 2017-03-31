@@ -1,7 +1,7 @@
 import Joi from 'joi';
-import { hoc } from 'octobus.js';
+import { hof } from 'octobus.js';
 
-const { withSchema } = hoc;
+const { withSchema } = hof;
 
 export default (namespace, options = {}) => {
   const parsedOptions = Joi.attempt(options, {
