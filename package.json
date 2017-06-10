@@ -1,6 +1,6 @@
 {
   "name": "octobus-crud",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Octobus CRUD generator",
   "main": "dist/index.js",
   "scripts": {
