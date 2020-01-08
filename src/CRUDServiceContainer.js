@@ -3,10 +3,21 @@ import { decorators, ServiceContainer } from 'octobus.js';
 
 const { withSchema, service } = decorators;
 
+const limitFields = ({ allowedFields = [], userFields = [] }) => {
+  if (!userFields.length) {
+    return allowedFields;
+  }
+
+  const allowedUserFields = userFields.filter(field => allowedFields.includes(field));
+
+  return allowedUserFields;
+};
+
 class CRUDServiceContainer extends ServiceContainer {
   constructor(schema, store) {
     super();
     this.schema = schema;
+    this.allowedFields = Object.keys(schema);
     this.setStore(store);
   }
 
@@ -27,7 +38,15 @@ class CRUDServiceContainer extends ServiceContainer {
   @service()
   @withSchema(Joi.any().required())
   findById(id) {
-    return this.getStore().findById(id);
+    return this.getStore().findOne({
+      query: { _id: id },
+      options: {
+      /* only schema fields must be returned */
+        fields: limitFields({
+          allowedFields: this.allowedFields,
+        }),
+      },
+    });
   }
 
   @service()
@@ -35,12 +54,22 @@ class CRUDServiceContainer extends ServiceContainer {
     Joi.object()
       .keys({
         query: Joi.object(),
-        options: Joi.object()
+        options: Joi.object().default({})
       })
       .default({})
   )
   findOne({ query, options }) {
-    return this.getStore().findOne({ query, options });
+    return this.getStore().findOne({
+      query,
+      options: {
+        ...options,
+        /* only schema fields must be returned */
+        fields: limitFields({
+          allowedFields: this.allowedFields,
+          userFields: options.fields,
+        }),
+      },
+    });
   }
 
   @service()
@@ -56,7 +85,14 @@ class CRUDServiceContainer extends ServiceContainer {
       .default({})
   )
   findMany(options) {
-    return this.getStore().findMany(options);
+    return this.getStore().findMany({
+      ...options,
+      /* only schema fields must be returned */
+      fields: limitFields({
+        allowedFields: this.allowedFields,
+        userFields: options.fields,
+      }),
+    });
   }
 
   @service()
